@@ -1,87 +1,67 @@
-import React, { Component } from 'react';
 import { QuizForm } from './QuizForm/QuizForm';
 import { GlobalStyle, SectionContainer } from './GlobalStyle';
 import { Filter } from './Filter/Filter';
 import { ContactList } from './ContactList/ContactList';
+import { useEffect, useState } from 'react';
 
-export class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', contacts: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', contacts: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', contacts: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', contacts: '227-91-26' },
-    ],
-    filter: '',
-    name: '',
-    number: '',
-  };
-  
-  componentDidMount() {
-   const savedContacts = localStorage.getItem('quiz-contacts');
-   if(savedContacts !== null) {
-this.setState({contacts: JSON.parse(savedContacts)})
-   }
-  }
+export const App = () => {
 
-  componentDidUpdate(prevProps, prevState) {
-    if(prevState.contacts !== this.state.contacts) {
-      localStorage.setItem('quiz-contacts', JSON.stringify(this.state.contacts))
-    }
-  }
+  const [contacts, setContacts] = useState([
+    { id: 'id-1', name: 'Rosie Simpson', contacts: '459-12-56' },
+    { id: 'id-2', name: 'Hermione Kline', contacts: '443-89-12' },
+    { id: 'id-3', name: 'Eden Clements', contacts: '645-17-79' },
+    { id: 'id-4', name: 'Annie Copeland', contacts: '227-91-26' },
+  ]);
+  const [filter, setFilter] = useState('');
 
-  changeFilter = newFilter => {
-    this.setState({
-      filter: newFilter,
-    });
-  };
+  useEffect(() => {
+    localStorage.setItem('quiz-contacts', JSON.stringify(contacts))
+ },[contacts]);
 
-  addContact = newContact => {
-    if (this.existContact(newContact.name)) {
+  useEffect( () => {
+    const savedContacts = localStorage.getItem('quiz-contacts');
+    if(savedContacts !== null) {
+    setContacts(JSON.parse(savedContacts));
+         }
+   }, []);
+
+
+  const visibleContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  const addContact = newContact => {
+    if (existContact(newContact.name)) {
       alert('Contact with this name already exists!');
       return;
     }
-    this.setState(prevState => {
-      return {
-        contacts: [...prevState.contacts, newContact],
-      };
-    });
+    setContacts(prevContacts => [...prevContacts, newContact]);
   };
 
- existContact = newContactName => {
-    return this.state.contacts.some(
-      contact =>
-        contact.name.toLocaleLowerCase() === newContactName.toLocaleLowerCase()
+  const existContact = newContactName => {
+    return contacts.some(
+      contact => contact.name.toLowerCase() === newContactName.toLowerCase()
     );
   };
 
-  handleDelete = (contactId) => {
-    this.setState(prevState => {
-      return {
-        contacts: prevState.contacts.filter(
-          contact => contact.id !== contactId 
-        ),
-      };
-    });
-  }
+  const changeFilter = newFilter => {
+    setFilter(newFilter);
+  };
 
-  render() {
-    const visibleContacts = this.state.contacts.filter(contact =>
-      contact.name.toLowerCase().includes(this.state.filter.toLowerCase())
+  const handleDelete = contactId => {
+    setContacts(prevContacts =>
+      prevContacts.filter(contact => contact.id !== contactId)
     );
+  };
 
-    return (
-      <SectionContainer>
-        <GlobalStyle />
-        <h1>Phonebook</h1>
-        <QuizForm onAdd={this.addContact} />
-        <h2>Contacts</h2>
-        <Filter
-          filterValue={this.state.filter}
-          onChangeFilter={this.changeFilter}
-        />
-        <ContactList contact={visibleContacts} deleteContact ={this.handleDelete}/>
-      </SectionContainer>
-    );
-  }
-}
+  return (
+    <SectionContainer>
+      <GlobalStyle />
+      <h1>Phonebook</h1>
+      <QuizForm onAdd={addContact} />
+      <h2>Contacts</h2>
+      <Filter filterValue={filter} onChangeFilter={changeFilter} />
+      <ContactList contact={visibleContacts} deleteContact={handleDelete} />
+    </SectionContainer>
+  );
+};
