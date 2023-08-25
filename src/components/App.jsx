@@ -6,25 +6,15 @@ import { useEffect, useState } from 'react';
 
 export const App = () => {
 
-  const [contacts, setContacts] = useState([
-    { id: 'id-1', name: 'Rosie Simpson', contacts: '459-12-56' },
-    { id: 'id-2', name: 'Hermione Kline', contacts: '443-89-12' },
-    { id: 'id-3', name: 'Eden Clements', contacts: '645-17-79' },
-    { id: 'id-4', name: 'Annie Copeland', contacts: '227-91-26' },
-  ]);
+  const [contacts, setContacts] = useState(
+    JSON.parse(localStorage.getItem('quiz-contacts')) || []
+  );
+
   const [filter, setFilter] = useState('');
 
   useEffect(() => {
-    localStorage.setItem('quiz-contacts', JSON.stringify(contacts))
- },[contacts]);
-
-  useEffect( () => {
-    const savedContacts = localStorage.getItem('quiz-contacts');
-    if(savedContacts !== null) {
-    setContacts(JSON.parse(savedContacts));
-         }
-   }, []);
-
+    localStorage.setItem('quiz-contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
   const visibleContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(filter.toLowerCase())
@@ -37,6 +27,7 @@ export const App = () => {
     }
     setContacts(prevContacts => [...prevContacts, newContact]);
   };
+  
 
   const existContact = newContactName => {
     return contacts.some(
@@ -61,7 +52,7 @@ export const App = () => {
       <QuizForm onAdd={addContact} />
       <h2>Contacts</h2>
       <Filter filterValue={filter} onChangeFilter={changeFilter} />
-      <ContactList contact={visibleContacts} deleteContact={handleDelete} />
+      <ContactList contact={visibleContacts} deleteContact={handleDelete}/>
     </SectionContainer>
   );
 };
